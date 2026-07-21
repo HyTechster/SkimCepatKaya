@@ -32,22 +32,27 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; }
 body {
-  /* Default (pre-login) background. Once in game, hud.js overrides
-     background-image inline to the current method's scene. cover + center fills
-     any shape; the overlay gradient darkens it so UI text stays readable. */
   background-color: var(--bg);
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  /* sticky-footer column: the credit's margin-top:auto pushes it to the bottom */
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+}
+
+/* Fixed background layer. Its height is 100vh/100lvh (the LARGE viewport), which
+   stays constant when the mobile address bar shows/hides — so `cover` never
+   recomputes and the scene doesn't zoom/jump while scrolling. hud.js swaps its
+   background-image to the current method's scene. */
+#bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100lvh;
+  z-index: -1; background-color: var(--bg);
   background-image:
     linear-gradient(180deg, rgba(12,9,3,0.30), rgba(12,9,3,0.55)),
     url("../assets/bg-piggy_bank.png");
   background-position: center center;
   background-size: cover;
   background-repeat: no-repeat;
-  background-attachment: fixed;
-  color: var(--ink);
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  line-height: 1.55;
-  /* sticky-footer column: the credit's margin-top:auto pushes it to the bottom */
-  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
 }
 .hidden { display: none !important; }
 button { font: inherit; cursor: pointer; }

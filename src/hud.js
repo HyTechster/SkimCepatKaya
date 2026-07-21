@@ -32,12 +32,15 @@ function render({ state, profile, config }) {
 
   renderLevelBar(state);
 
-  // swap the page background to the current method's scene. Set background-image
-  // inline (not via a CSS var) so the url resolves relative to the page, not the
-  // stylesheet. The overlay gradient is kept so text stays readable.
-  const bgId = state.current_method_id || "piggy_bank";
-  document.body.style.backgroundImage =
-    `linear-gradient(180deg, rgba(12,9,3,0.30), rgba(12,9,3,0.55)), url("assets/bg-${bgId}.png")`;
+  // swap the fixed #bg layer to the current method's scene. Inline background-image
+  // so the url resolves relative to the page, not the stylesheet. The overlay
+  // gradient is kept so text stays readable.
+  const bgEl = document.getElementById("bg");
+  if (bgEl) {
+    const bgId = state.current_method_id || "piggy_bank";
+    bgEl.style.backgroundImage =
+      `linear-gradient(180deg, rgba(12,9,3,0.30), rgba(12,9,3,0.55)), url("assets/bg-${bgId}.png")`;
+  }
 }
 
 // Level comes from net worth: level = 1 + floor(sqrt(net_worth) / 3), so the net

@@ -618,7 +618,10 @@ begin
       left(coalesce(nullif(new.raw_user_meta_data->>'display_name', ''),
                     split_part(new.email, '@', 1)), 24)
     );
-  insert into public.player_state (user_id) values (new.id);
+  -- start the drop cooldown clocks in the past so the FIRST cash/wallet drop is
+  -- claimable right away (otherwise the initial 10s/60s cooldown blocks it).
+  insert into public.player_state (user_id, last_cash_at, last_wallet_at)
+    values (new.id, now() - interval '1 day', now() - interval '1 day');
   insert into public.owned_methods (user_id, method_id) values (new.id, 'piggy_bank');
   return new;
 end;

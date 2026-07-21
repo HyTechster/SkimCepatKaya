@@ -99,7 +99,7 @@ async function onCatch(d) {
     if (g > 0) {
       toast(d.type === "wallet" ? `Wallet found!  +${fmtMoney(g)}` : `Cash grabbed!  +${fmtMoney(g)}`);
     } else {
-      toast("Too slow, that one got away.");
+      toast("Still cooling down — catch the next one!");
     }
   } catch (e) {
     console.error("drop claim failed:", e);

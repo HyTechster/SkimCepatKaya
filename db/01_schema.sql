@@ -85,8 +85,8 @@ create table if not exists player_state (
   rank_id          text    not null default 'rakyat' references ranks (id),  -- prestige title
   last_click_at    timestamptz not null default now(),  -- server clock: rate limit
   last_idle_at     timestamptz not null default now(),  -- server clock: idle payout
-  last_cash_at    timestamptz not null default now(),  -- server clock: coin drop cooldown
-  last_wallet_at   timestamptz not null default now(),  -- server clock: wallet drop cooldown
+  last_cash_at    timestamptz not null default (now() - interval '1 day'),  -- past: first coin drop is claimable
+  last_wallet_at   timestamptz not null default (now() - interval '1 day'),  -- past: first wallet drop is claimable
   created_at       timestamptz not null default now(),
   updated_at       timestamptz not null default now()
 );

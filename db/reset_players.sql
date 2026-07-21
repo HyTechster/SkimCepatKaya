@@ -23,8 +23,8 @@ update player_state set
   rank_id           = 'rakyat',
   last_click_at     = now(),
   last_idle_at      = now(),
-  last_cash_at      = now(),
-  last_wallet_at    = now(),
+  last_cash_at      = now() - interval '1 day',   -- past: first drop claimable after reset
+  last_wallet_at    = now() - interval '1 day',
   updated_at        = now();
 
 -- 3. give everyone back the starting method
