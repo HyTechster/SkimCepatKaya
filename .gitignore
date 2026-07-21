@@ -1,0 +1,26 @@
+# Emscripten SDK — the toolchain, not app code. Large; install locally instead.
+emsdk/
+
+# OS / editor junk
+.vscode/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Local env / secrets (never commit real keys)
+.env
+.env.local
+.env.*.local
+
+# Vercel CLI local files
+.vercel
+
+# Node tooling (only if you add a build step later) + logs
+node_modules/
+*.log
+npm-debug.log*
+
+# Note: design/ is intentionally NOT ignored — the sprite prompts live there.
+# Note: wasm/game.js and wasm/game.wasm are BUILD OUTPUT, kept in the repo on
+# purpose so static hosts can deploy without running emcc. Add them here if you
+# prefer to build in CI instead.

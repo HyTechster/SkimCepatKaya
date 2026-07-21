@@ -1,0 +1,496 @@
+/* main.css — warm yellow "money" theme for SkimCepatKaya */
+
+:root {
+  --bg:        #17130A;   /* warm near-black (study room) */
+  --bg-2:      #201A0E;
+  --panel:     #262013;
+  --panel-2:   #302818;
+  --line:      #453922;
+  --ink:       #FBF3DF;   /* warm off-white */
+  --muted:     #B0A277;
+  --gold:      #FFD24A;   /* money */
+  --accent:    #FFC02E;   /* yellow accent */
+  --accent-2:  #7BD36A;   /* green for good/affordable */
+  --danger:    #FF7A5A;
+  --radius:    14px;
+
+  /* dark-brown wood: real fractal-noise grain (SVG) + soft plank seams + light.
+     If the SVG ever fails, --wood-base shows a plain dark brown. */
+  --wood-base: #2a1a0c;
+  /* grain ONLY — no full-height lighting gradient (that would stretch with the
+     panel height and make short vs tall panels look different). Depth comes from
+     an edge-anchored inset shadow on .panel instead. */
+  --wood-tex:
+    url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='320' height='320'><filter id='w'><feTurbulence type='fractalNoise' baseFrequency='0.006 0.05' numOctaves='5' seed='17' stitchTiles='stitch'/><feColorMatrix type='matrix' values='0.30 0 0 0 0.09 0.19 0 0 0 0.05 0.09 0 0 0 0.02 0 0 0 0 1'/></filter><rect width='320' height='320' filter='url(%23w)'/></svg>");
+  /* the fixed-pitch plank seams on their own */
+  --wood-seams:
+    repeating-linear-gradient(0deg, transparent 0 58px, rgba(8,4,1,0.62) 60px, rgba(8,4,1,0.18) 64px, transparent 67px);
+  /* full wood = seams over grain (used by the shop, topbar, donate) */
+  --wood: var(--wood-seams), var(--wood-tex);
+}
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; }
+body {
+  /* Default (pre-login) background. Once in game, hud.js overrides
+     background-image inline to the current method's scene. cover + center fills
+     any shape; the overlay gradient darkens it so UI text stays readable. */
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(180deg, rgba(12,9,3,0.30), rgba(12,9,3,0.55)),
+    url("../assets/bg-piggy_bank.png");
+  background-position: center center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.55;
+  /* sticky-footer column: the credit's margin-top:auto pushes it to the bottom */
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+}
+.hidden { display: none !important; }
+button { font: inherit; cursor: pointer; }
+
+/* ---------- floating cash drops (src/sky.js) ---------- */
+/* the drop layer sits above the UI but is click-through EXCEPT on the coins */
+#cashLayer { position: fixed; inset: 0; z-index: 6; pointer-events: none; overflow: hidden; }
+.cashdrop {
+  position: absolute; top: 0; left: 0; width: 46px; height: 46px;
+  padding: 0; border: 0; background: transparent; pointer-events: auto; cursor: pointer;
+  will-change: transform; transform-origin: 50% 50%;
+  transition: opacity 0.2s ease, scale 0.2s ease;
+}
+/* a shiny gold coin with a $ */
+.cashdrop::after {
+  content: "$"; position: absolute; inset: 0; display: grid; place-items: center;
+  border-radius: 50%; font-weight: 900; font-size: 21px; color: #7a5a10;
+  background: radial-gradient(circle at 38% 32%, #fff2c0, #FFD24A 55%, #E0A81E 100%);
+  border: 2px solid #b9860f;
+  box-shadow: inset 0 2px 3px rgba(255,255,255,0.5);   /* shine only, no glow */
+}
+.cashdrop:hover { filter: brightness(1.1); }
+.cashdrop.caught { opacity: 0; scale: 1.6; }
+
+/* the rare wallet drop: bigger, uses the wallet art */
+.walletdrop {
+  position: absolute; top: 0; left: 0; width: 60px; height: 60px;
+  padding: 0; border: 0; background: transparent; pointer-events: auto; cursor: pointer;
+  will-change: transform; transform-origin: 50% 50%;
+  transition: opacity 0.2s ease, scale 0.2s ease;
+  background-image: url("../assets/method-wallet.png");
+  background-size: contain; background-position: center; background-repeat: no-repeat;
+  filter: drop-shadow(0 4px 5px rgba(0,0,0,0.45));
+}
+.walletdrop:hover { filter: drop-shadow(0 4px 5px rgba(0,0,0,0.45)) brightness(1.08); }
+.walletdrop.caught { opacity: 0; scale: 1.7; }
+
+@media (prefers-reduced-motion: reduce) {
+  .cashdrop, .walletdrop { transition: opacity 0.2s ease; }
+}
+
+/* ---------- brand ---------- */
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand h1 { margin: 0; font-size: 30px; font-weight: 750; letter-spacing: -0.02em; }
+.brand.small { font-weight: 700; font-size: 16px; }
+/* topbar wordmark: clean white with a soft shadow for depth on the wood */
+.brand.small .brand-name {
+  font-weight: 800; font-size: 16px; letter-spacing: 0.01em; color: var(--ink);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.brand-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #cfe0ff, var(--accent));
+  box-shadow: 0 0 14px var(--accent);
+}
+.brand-logo { width: 48px; height: 48px; object-fit: contain; margin: -6px -4px -6px -8px; }
+.brand-mark { width: 30px; height: 30px; object-fit: contain; margin: -5px -6px -5px -8px; }
+.brand-tag { color: var(--muted); font-size: 14px; margin: 6px 0 22px; }
+.brand-tag b { color: var(--accent); }
+
+/* ================= AUTH ================= */
+.auth-screen { width: 100%; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+/* ---------------------------------------------------------------------------
+   GAME-STYLE CHUNKY BOXES  (Diep.io-like)
+   Reusable recipe reused across buttons/inputs/cards:
+     --edge  : the thick dark outline color
+     --lip   : the darker shade drawn UNDER a button as a 3D "lip"
+   Buttons:  solid fill + `border: 3px solid var(--edge)` + `box-shadow: 0 Ny 0 <lip>`.
+             :active pushes the element DOWN onto its lip (translateY + kill lip).
+   Inputs:   recessed — thick edge + `inset` shadow so they look carved in.
+   Text is bold with a soft shadow for that arcade punch.
+--------------------------------------------------------------------------- */
+:root { --edge: #120c03; }
+
+.auth-card {
+  width: 100%; max-width: 400px;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 3px solid var(--edge); border-radius: 20px;
+  padding: 30px 28px;
+  box-shadow: 0 8px 0 var(--edge), 0 26px 60px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.05);
+}
+.tabs { display: flex; gap: 6px; background: #090c18; border: 3px solid var(--edge);
+  border-radius: 14px; padding: 5px; margin-bottom: 20px; box-shadow: inset 0 2px 6px rgba(0,0,0,0.55); }
+.tabs button { flex: 1; padding: 10px; border: 0; border-radius: 10px; background: transparent;
+  color: var(--muted); font-weight: 800; letter-spacing: 0.02em; }
+.tabs button.on {
+  background: linear-gradient(180deg, #FFE08A, var(--accent)); color: #0a0c18;
+  box-shadow: 0 3px 0 #b8860f; text-shadow: 0 1px 0 rgba(255,255,255,0.28);
+}
+form { display: flex; flex-direction: column; gap: 13px; }
+label { display: flex; flex-direction: column; gap: 6px; font-size: 12px; color: #aab2d8;
+  font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+input {
+  font: inherit; font-weight: 600; text-transform: none; letter-spacing: normal; color: var(--ink);
+  background: #090c18; border: 3px solid var(--edge); border-radius: 12px; padding: 12px 13px;
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.55);
+}
+input::placeholder { color: #59618a; font-weight: 500; }
+input:focus-visible { outline: 0; border-color: var(--accent);
+  box-shadow: inset 0 3px 6px rgba(0,0,0,0.5), 0 0 0 3px rgba(255,192,46,0.28); }
+.primary {
+  margin-top: 8px; padding: 13px; border: 3px solid var(--edge); border-radius: 13px;
+  font-weight: 800; font-size: 15px; letter-spacing: 0.02em; color: #0a0c18;
+  background: linear-gradient(180deg, #FFE08A, var(--accent));
+  box-shadow: 0 5px 0 #b8860f, 0 9px 16px rgba(0,0,0,0.35);
+  text-shadow: 0 1px 0 rgba(255,255,255,0.3);
+  transition: transform 0.05s ease, box-shadow 0.05s ease, filter 0.15s;
+}
+.primary:hover { filter: brightness(1.06); }
+.primary:active { transform: translateY(5px); box-shadow: 0 0 0 #b8860f, 0 3px 8px rgba(0,0,0,0.3); }
+.primary:disabled { opacity: 0.6; cursor: default; box-shadow: 0 5px 0 #b8860f; }
+
+/* ================= GAME ================= */
+/* Wide container so the shop columns sit near the page edges on desktop and the
+   clicker gets a big empty middle. Bump --maxw if you want it even wider. */
+.game-screen { --maxw: 1760px; width: 100%; max-width: var(--maxw); margin: 0 auto; padding: 20px 28px 20px; }
+
+/* game title / credit: fixed at the bottom on desktop, at the very top on mobile */
+.game-credit {
+  text-align: center; margin: auto auto 20px; padding: 0 14px;   /* margin-top:auto -> bottom */
+  pointer-events: none; letter-spacing: 0.02em;
+  font-size: 15px; font-weight: 500; color: rgba(255,240,205,0.62);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
+.game-credit b { color: rgba(255,240,205,0.92); font-weight: 800; }
+.game-credit .by { opacity: 0.85; }
+
+/* compact nav: shrink-wraps to its contents and centers, chunky game block */
+.topbar {
+  display: flex; flex-direction: column; gap: 6px;
+  width: fit-content; max-width: 100%; margin: 0 auto 26px;
+  padding: 10px 22px 7px;
+  background-color: var(--wood-base);
+  background-image: var(--wood);
+  border: 3px solid var(--edge); border-radius: 16px;
+  box-shadow: 0 5px 0 var(--edge), 0 12px 26px rgba(0,0,0,0.28), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+.topbar-main { display: flex; align-items: center; gap: 28px; }
+/* no visible separator — just clean spacing (the topbar gap) between the rows */
+.topbar-sep { display: none; }
+.topbar .stats { display: flex; gap: 26px; }
+.stat { display: flex; flex-direction: column; align-items: center; }
+.stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.stat-val { font-size: 20px; font-weight: 700; line-height: 24px; font-variant-numeric: tabular-nums; }
+.stat-val.gold { color: var(--gold); }
+.stat-val.rank { font-size: 14px; font-weight: 750; line-height: 24px; color: var(--ink);
+  display: inline-flex; align-items: center; gap: 4px; }
+.who-box { display: flex; align-items: center; gap: 12px; }
+.who-name { font-weight: 600; color: var(--ink); max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ---- slim level-progress bar (lives inside the topbar) ---- */
+.level-bar { width: 100%; margin: 0; }
+.level-bar-row { display: flex; align-items: center; gap: 9px; }
+.level-tag { font-size: 11px; font-weight: 800; color: var(--muted); white-space: nowrap; letter-spacing: 0.02em; }
+.level-bar-track { flex: 1; height: 9px; background: #0a0d18; border: 1.5px solid var(--edge);
+  border-radius: 99px; overflow: hidden; box-shadow: inset 0 1px 2px rgba(0,0,0,0.55); }
+.level-bar-fill { height: 100%; width: 0%; border-radius: 99px;
+  background: linear-gradient(90deg, var(--accent), var(--gold)); transition: width 0.35s ease; }
+.level-need { text-align: center; font-size: 11.5px; color: #fff2c2; font-weight: 700;
+  margin-top: 2px; font-variant-numeric: tabular-nums; }
+.ghost { background: var(--panel-2); color: var(--muted); border: 2.5px solid var(--edge);
+  border-radius: 10px; padding: 6px 13px; font-weight: 800;
+  box-shadow: 0 3px 0 var(--edge); transition: transform 0.05s, box-shadow 0.05s, color 0.15s; }
+.ghost:hover { color: var(--ink); }
+.ghost:active { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+
+/* left shop | center clicker | right leaderboard — clicker is the middle hero.
+   Fixed side columns + a flexible center means: the wider the screen, the more
+   empty breathing space the clicker gets, while the shop stays pinned to the edges. */
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr) 340px; gap: 48px; align-items: start; }
+.col { display: flex; flex-direction: column; gap: 16px; }
+
+/* keep the leaderboard in view as you scroll (desktop only) */
+@media (min-width: 921px) { .col-right { position: sticky; top: 18px; } }
+
+/* On huge screens, widen the gutters even more so the boxes hug the edges. */
+@media (min-width: 1500px) { .layout { gap: 72px; } }
+
+/* Tablet: keep 3 columns but tighter until it no longer fits. */
+@media (max-width: 1200px) {
+  .layout { grid-template-columns: 260px minmax(0, 1fr) 300px; gap: 28px; }
+}
+
+/* Narrow / mobile: single column with the clicker on top as the focal point. */
+@media (max-width: 920px) {
+  .layout { grid-template-columns: 1fr; gap: 18px; }
+  .stage { order: -1; }
+}
+
+/* ---- clicker stage: NO box — the clicker sits centered in the page ---- */
+.stage {
+  position: relative;
+  background: none; border: 0; padding: 12px 0;
+  text-align: center;
+  display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+}
+
+/* floating "+$X" earned per tap; rises and fades, not tied to the cursor */
+.gain-text {
+  position: absolute; transform: translateX(-50%);
+  font-weight: 800; font-size: 20px; color: var(--gold); pointer-events: none;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6); white-space: nowrap; z-index: 3;
+  animation: gain-float 0.85s ease-out forwards;
+}
+@keyframes gain-float {
+  0%   { opacity: 0; transform: translateX(-50%) translateY(4px) scale(0.9); }
+  18%  { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-72px) scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gain-text { animation-duration: 0.5s; }
+}
+.place-name { color: var(--accent); font-weight: 700; letter-spacing: 0.02em; font-size: 15px; }
+.balance-amount { font-size: 52px; font-weight: 800; line-height: 1.1; margin-top: 6px;
+  font-variant-numeric: tabular-nums; text-shadow: 0 0 30px rgba(255,192,46,0.35); }
+.balance-label { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; margin-top: -2px; }
+#clicker {
+  width: 100%; max-width: 460px; aspect-ratio: 1/1; display: block; margin: 18px auto 10px;
+  cursor: pointer; touch-action: manipulation; user-select: none;
+  -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; outline: none;
+}
+#clicker:active { transform: scale(0.997); }
+.rates { display: flex; justify-content: center; gap: 40px; margin-top: 4px; }
+.rate { display: flex; flex-direction: column; }
+.rate-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+.rate-val { font-size: 18px; font-weight: 700; }
+
+/* ---- panels: layered surface, top highlight, soft depth ---- */
+.panel {
+  position: relative;
+  background-color: var(--wood-base);
+  background-image: var(--wood);
+  border: 3px solid var(--edge); border-radius: 16px; padding: 15px 15px 17px;
+  box-shadow: 0 4px 0 var(--edge), 0 12px 26px rgba(0,0,0,0.28),
+    inset 0 1px 0 rgba(255,255,255,0.06),
+    inset 0 -44px 55px -34px rgba(0,0,0,0.6);   /* bottom darkening, height-independent */
+}
+.panel h3 { margin: 0 0 12px; font-size: 14px; font-weight: 750; letter-spacing: 0.01em;
+  display: flex; justify-content: space-between; align-items: center; }
+.refresh {
+  display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0;
+  color: var(--muted); background: var(--bg-2); border: 2px solid var(--edge);
+  border-radius: 9px; box-shadow: 0 2px 0 var(--edge);
+  transition: color 0.15s, transform 0.06s, box-shadow 0.06s;
+}
+.refresh svg { display: block; transition: transform 0.35s ease; }
+.refresh:hover { color: var(--ink); }
+.refresh:hover svg { transform: rotate(-90deg); }
+.refresh:active { transform: translateY(2px); box-shadow: 0 0 0 var(--edge); }
+.refresh.loading { color: var(--accent); pointer-events: none; }
+.refresh.loading svg { animation: spin 0.7s linear infinite; transition: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---- shop: header + balance chip + tabs ---- */
+.shop-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.shop-head h3 { margin: 0; }
+.shop-balance {
+  font-weight: 800; color: var(--gold); font-size: 14px; font-variant-numeric: tabular-nums;
+  background: rgba(255,211,106,0.10); border: 1px solid rgba(255,211,106,0.24);
+  padding: 4px 11px; border-radius: 999px;
+}
+.shop-tabs { display: flex; gap: 3px; background: #090c18; border: 2px solid var(--edge);
+  border-radius: 12px; padding: 4px; margin-bottom: 13px; box-shadow: inset 0 2px 5px rgba(0,0,0,0.45); }
+.shop-tab { flex: 1 1 0; min-width: 0; position: relative; border: 0; border-radius: 8px; padding: 7px 3px;
+  background: transparent; color: var(--muted); font-weight: 650; font-size: 12px; white-space: nowrap;
+  transition: color 0.15s; }
+.shop-tab.on { background: linear-gradient(180deg, #4a3a12, #352a10); color: var(--ink);
+  box-shadow: 0 2px 0 #241a08, inset 0 1px 0 rgba(255,255,255,0.09); }
+.shop-tab:hover:not(.on) { color: var(--ink); }
+.shop-tab.has-active::after { content: ""; position: absolute; top: 5px; right: 7px;
+  width: 6px; height: 6px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 8px var(--accent-2); }
+.shop-body { min-height: 210px; }
+
+/* ---- compact card rows: icon · name+meta · buy ---- */
+.card-list { display: flex; flex-direction: column; gap: 8px; }
+.card {
+  display: flex; align-items: center; gap: 11px;
+  background: linear-gradient(180deg, var(--panel-2), var(--bg-2));
+  border: 2px solid var(--edge); border-radius: 12px; padding: 9px 10px;
+  box-shadow: 0 2px 0 rgba(0,0,0,0.35);
+  transition: transform 0.08s ease, box-shadow 0.12s;
+}
+.card:hover { transform: translateY(-1px); box-shadow: 0 3px 0 rgba(0,0,0,0.4); }
+.card.active { border-color: var(--accent-2);
+  box-shadow: 0 2px 0 #2e6b2a, inset 0 0 0 1px rgba(123,211,106,0.30), 0 0 18px rgba(123,211,106,0.12); }
+.card.paused { opacity: 0.8; }
+.card.paused .card-sub { color: var(--gold); }
+.card-icon { width: 38px; height: 38px; object-fit: contain; flex: 0 0 auto; }
+.card-icon.emoji { display: grid; place-items: center; font-size: 25px; line-height: 1; }
+/* the Debit Card art is a portrait with lots of empty space; crop-fill it so it
+   isn't tiny next to the other (centered) method icons */
+.card-icon.method-card { object-fit: cover; object-position: center 56%; border-radius: 6px; }
+.card-body { flex: 1; min-width: 0; }
+.card-name { font-weight: 650; font-size: 13.5px; line-height: 1.25; overflow-wrap: anywhere; }
+.chip { flex: 0 0 auto; font-size: 10.5px; font-weight: 800; color: var(--accent);
+  background: rgba(255,192,46,0.14); border: 1px solid rgba(255,192,46,0.24);
+  padding: 1px 7px; border-radius: 999px; white-space: nowrap; }
+.card-sub { display: flex; align-items: center; flex-wrap: wrap; gap: 6px;
+  font-size: 11.5px; color: var(--muted); margin-top: 3px; }
+.buy {
+  flex: 0 0 auto; min-width: 60px; border: 2.5px solid var(--edge); border-radius: 10px; padding: 7px 12px;
+  font-weight: 800; font-size: 12.5px; color: #3a2a05; font-variant-numeric: tabular-nums;
+  background: linear-gradient(180deg, #ffe08c, var(--gold));
+  box-shadow: 0 3px 0 #a9781a; text-shadow: 0 1px 0 rgba(255,255,255,0.35);
+  transition: transform 0.05s, box-shadow 0.05s, filter 0.15s;
+}
+.buy:hover:not(:disabled) { filter: brightness(1.06); }
+.buy:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 0 0 #a9781a; }
+.buy.off, .buy:disabled { background: var(--panel); color: var(--muted); border-color: var(--edge);
+  box-shadow: 0 3px 0 var(--edge); text-shadow: none; cursor: default; }
+
+/* ---- leaderboard: the hero panel ---- */
+/* leaderboard uses grain-only wood so its planks can line up with the names
+   (each row draws its own seam below). The trophy also sets it apart. */
+.leaderboard { background-image: var(--wood-tex); }
+.lb-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.lb-head h3 { margin: 0; font-size: 16px; }
+.lb-trophy { margin-right: 5px; }
+
+.ranks { list-style: none; margin: 0; padding: 0; counter-reset: rank; }
+.ranks li {
+  counter-increment: rank; position: relative; display: grid;
+  grid-template-columns: 24px 1fr auto; align-items: center; gap: 10px;
+  padding: 11px 9px; font-size: 14px;
+}
+/* plank seam under each name, drawn on the wood background (not around the text).
+   This makes every name sit on its own plank, seams always aligned to rows. */
+.ranks li::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px;
+  background: rgba(6,3,0,0.5); box-shadow: 0 1px 0 rgba(255,236,205,0.06);
+}
+.ranks li:last-child::after { display: none; }
+.ranks li::before {
+  content: counter(rank); display: grid; place-items: center; width: 22px; height: 22px;
+  border-radius: 50%; font-size: 11px; font-weight: 800; color: var(--muted);
+  background: var(--bg-2); border: 1px solid var(--line);
+}
+.ranks li:nth-child(1)::before { color: #3a2c00; background: linear-gradient(180deg,#ffe79c,var(--gold)); border-color: transparent; }
+.ranks li:nth-child(2)::before { color: #2a2f3a; background: linear-gradient(180deg,#eef2f8,#b9c2d4); border-color: transparent; }
+.ranks li:nth-child(3)::before { color: #3a2213; background: linear-gradient(180deg,#eab27a,#c07d43); border-color: transparent; }
+.ranks li:nth-child(1) { background: linear-gradient(90deg, rgba(255,211,106,0.12), transparent 80%); }
+.ranks li.me {
+  background: #29190a;                 /* mostly flat dark brown */
+  border-radius: 10px; border: 1px solid rgba(0,0,0,0.55);   /* dark outline */
+  margin: 2px 0 6px;                   /* room for the lip */
+  box-shadow: 0 4px 0 #120b03, inset 0 1px 0 rgba(0,0,0,0.4);   /* strong lip, dark bevel */
+}
+.ranks li.me::after { display: none; }   /* it's a rounded box, not a plank seam */
+.ranks .who-wrap { display: flex; flex-direction: column; min-width: 0; gap: 1px; }
+.ranks .who { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.ranks .who-rank { font-size: 11px; font-weight: 600; color: var(--gold);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ranks li.me .who { color: var(--ink); }
+.ranks .pts { color: var(--accent-2); font-weight: 800; font-variant-numeric: tabular-nums; }
+.ranks li:nth-child(1) .pts { color: var(--gold); }
+.empty { color: var(--muted); font-size: 14px; padding: 4px 8px; }
+
+/* ---- donate ---- */
+.donate { text-align: center; }
+.donate-text { color: #ecd9a0; font-style: italic; font-size: 13.5px; font-weight: 500; line-height: 1.5; margin: 0 0 14px; }
+.bmc-btn {
+  display: inline-flex; align-items: center; gap: 8px; text-decoration: none;
+  font-weight: 800; font-size: 14px; color: #12140a;
+  background: #FFDD00; border: 2.5px solid var(--edge); border-radius: 12px;
+  padding: 10px 18px; box-shadow: 0 4px 0 #b89e00;
+  transition: transform 0.05s, box-shadow 0.05s, filter 0.15s;
+}
+.bmc-btn:hover { filter: brightness(1.04); }
+.bmc-btn:active { transform: translateY(4px); box-shadow: 0 0 0 #b89e00; }
+.bmc-emoji { font-size: 17px; }
+
+/* ---- help button + modal ---- */
+.help-btn {
+  width: 30px; height: 30px; flex: 0 0 auto; border-radius: 50%;
+  border: 2.5px solid var(--edge); background: var(--panel-2); color: var(--accent);
+  font-weight: 800; font-size: 15px; line-height: 1;
+  box-shadow: 0 3px 0 var(--edge); transition: transform 0.05s, box-shadow 0.05s, color 0.15s;
+}
+.help-btn:hover { color: var(--ink); }
+.help-btn:active { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+
+.modal {
+  position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 20px;
+  background: rgba(5, 7, 14, 0.7); backdrop-filter: blur(3px);
+}
+.modal-card {
+  position: relative; width: 100%; max-width: 460px; max-height: 85vh; overflow-y: auto;
+  background: linear-gradient(180deg, var(--panel-2), var(--panel));
+  border: 3px solid var(--edge); border-radius: 18px; padding: 24px 24px 20px;
+  box-shadow: 0 8px 0 var(--edge), 0 30px 70px rgba(0,0,0,0.55);
+}
+.modal-card h2 { margin: 0 0 14px; font-size: 20px; font-weight: 800; }
+.modal-close {
+  position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 9px;
+  border: 2.5px solid var(--edge); background: var(--panel-2); color: var(--muted);
+  font-size: 18px; line-height: 1; box-shadow: 0 3px 0 var(--edge);
+}
+.modal-close:hover { color: var(--ink); }
+.modal-close:active { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+.help-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 9px;
+  font-size: 14px; color: #c7cce4; }
+.help-list b { color: var(--ink); }
+.help-note { margin: 16px 0 0; font-size: 12.5px; color: var(--muted); text-align: center; }
+
+/* ---- toasts ---- */
+#toastHost { position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%);
+  display: flex; flex-direction: column; gap: 8px; z-index: 50; align-items: center; }
+.toast {
+  background: var(--panel-2); color: var(--ink); border: 1px solid var(--line);
+  border-radius: 10px; padding: 11px 16px; font-size: 14px; max-width: 90vw; text-align: center;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.4); opacity: 0; transform: translateY(8px);
+  transition: opacity 0.25s, transform 0.25s;
+}
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ---- mobile tuning ---- */
+@media (max-width: 560px) {
+  .game-screen { padding: 12px 14px 14px; }
+  .game-credit { font-size: 14px; }
+
+  /* smaller raining coins on phones */
+  .cashdrop { width: 38px; height: 38px; }
+  .cashdrop::after { font-size: 17px; }
+  .walletdrop { width: 50px; height: 50px; }
+
+  /* topbar on phones: title on its own row up top, then name (left) / sign out
+     (right), then the stats row, then the level bar. */
+  .topbar { width: 100%; border-radius: var(--radius); padding: 10px 14px; }
+  .topbar-main { flex-wrap: wrap; gap: 9px 12px; }
+  .topbar-main .brand.small { order: 0; flex-basis: 100%; justify-content: center; }
+  .topbar-main .who-box { order: 1; flex-basis: 100%; justify-content: center; }
+  .topbar-main .who-name { max-width: 50vw; }
+  .topbar-main .stats { order: 2; flex-basis: 100%; justify-content: space-around; gap: 0; }
+
+  /* the hero number scales down a touch */
+  .balance-amount { font-size: 40px; }
+  #clicker { margin: 12px auto 8px; }
+
+  /* denser panels */
+  .panel { padding: 14px 13px 15px; }
+  .rates { gap: 28px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}

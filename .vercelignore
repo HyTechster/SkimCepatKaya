@@ -1,0 +1,8 @@
+# Keep the deployed static site lean and private. These live in git but should
+# NOT be served publicly by Vercel.
+emsdk/          # the C++ toolchain — huge, not needed at runtime
+db/             # SQL scripts run in Supabase, not the browser
+design/         # sprite-generation prompts
+wasm/engine.cpp # C++ source; only game.js + game.wasm are served
+README.md
+.gitignore
