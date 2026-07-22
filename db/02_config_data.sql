@@ -42,16 +42,25 @@ on conflict (id) do update set
   max_level = excluded.max_level, sort = excluded.sort;
 
 -- BOOSTERS: temporary flat multipliers on tap value. Best active one applies.
--- Price is dynamic: max(cost, net_worth * cost_rate). `cost` is the early-game
--- floor; `cost_rate` (a % of net worth) makes the price scale as you get richer,
--- so boosters always take a bit of grinding instead of being an instant buy.
--- Stronger boosters use a higher rate. Tune cost_rate up for a longer grind.
-alter table boosters add column if not exists cost_rate numeric not null default 0;
-insert into boosters (id, name, cost, cost_rate, multiplier, duration_seconds, sort) values
-  ('payday',   'Payday',            3,  0.02, 2.0, 30, 0),
-  ('compound', 'Compound Interest', 15, 0.06, 3.0, 20, 1)
+-- Price is dynamic: max(cost, base_per_tap * cost_taps). `cost` is the early-game
+-- floor; `cost_taps` prices the booster at that many taps' worth of your current
+-- income, so it scales with per-tap power (hustle/method/rank) but stays STEADY
+-- between upgrades (net worth would creep the price up on every tap). Stronger
+-- boosters cost more taps. Tune cost_taps up for a longer grind.
+-- (Migrate the old net-worth `cost_rate` column to `cost_taps` if it exists.)
+do $$
+begin
+  if exists (select 1 from information_schema.columns
+             where table_name = 'boosters' and column_name = 'cost_rate') then
+    alter table boosters rename column cost_rate to cost_taps;
+  end if;
+end $$;
+alter table boosters add column if not exists cost_taps numeric not null default 0;
+insert into boosters (id, name, cost, cost_taps, multiplier, duration_seconds, sort) values
+  ('payday',   'Payday',            3,  90,  2.0, 30, 0),
+  ('compound', 'Compound Interest', 15, 150, 3.0, 20, 1)
 on conflict (id) do update set
-  name = excluded.name, cost = excluded.cost, cost_rate = excluded.cost_rate,
+  name = excluded.name, cost = excluded.cost, cost_taps = excluded.cost_taps,
   multiplier = excluded.multiplier,
   duration_seconds = excluded.duration_seconds, sort = excluded.sort;
 

@@ -39,14 +39,15 @@ create table if not exists upgrades (
 );
 
 -- Temporary multipliers you can buy. They stack by taking the highest active one.
--- Price is dynamic: max(cost, net_worth * cost_rate). `cost` is the early-game
--- floor; `cost_rate` scales the price with the player's net worth so a booster
--- always costs a meaningful chunk (roughly a fixed grind) instead of staying cheap.
+-- Price is dynamic: max(cost, base_per_tap * cost_taps). `cost` is the early-game
+-- floor; `cost_taps` prices the booster at that many taps' worth of your current
+-- income, so it scales with per-tap power (hustle/method/rank) but stays STEADY
+-- between upgrades (net worth would creep the price up on every single tap).
 create table if not exists boosters (
   id                text primary key,
   name              text    not null,
   cost              numeric not null check (cost >= 0),          -- price floor
-  cost_rate         numeric not null default 0 check (cost_rate >= 0),  -- fraction of net worth
+  cost_taps         numeric not null default 0 check (cost_taps >= 0),  -- price = base per-tap x this
   multiplier        numeric not null check (multiplier > 1),
   duration_seconds  int     not null check (duration_seconds > 0),
   sort              int     not null default 0

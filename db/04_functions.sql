@@ -326,6 +326,9 @@ declare
   v_uid       uuid := auth.uid();
   v           player_state;
   v_b         boosters;
+  v_method    methods;
+  v_rankbonus numeric;
+  v_pertap    numeric;
   v_now       timestamptz := now();
   v_remaining numeric := 0;
   v_total     numeric;
@@ -340,9 +343,16 @@ begin
 
   select * into v from player_state where user_id = v_uid for update;
 
-  -- dynamic price: the floor, or a slice of net worth once you're wealthy enough.
-  -- Recomputed here on the server, so a tampered client can't buy it cheaper.
-  v_cost := greatest(v_b.cost, v.net_worth * coalesce(v_b.cost_rate, 0));
+  -- dynamic price: the floor, or a number of taps' worth of the player's BASE
+  -- per-tap income (rank + hustle scaled by method, WITHOUT any booster). Priced
+  -- off income so it scales with power but stays steady between upgrades, unlike
+  -- net worth which crept up every tap. Recomputed here so a tampered client
+  -- can't buy it cheaper.
+  select * into v_method from methods where id = v.current_method_id;
+  select coalesce(tap_bonus, 0) into v_rankbonus from ranks where id = v.rank_id;
+  v_pertap := (coalesce(v_rankbonus, 0) + 0.01 + 0.003 * v.tap_level * (v.tap_level + 1) / 2)
+              * coalesce(v_method.multiplier, 1);
+  v_cost := greatest(v_b.cost, v_pertap * coalesce(v_b.cost_taps, 0));
   if v.balance < v_cost then raise exception 'not enough balance'; end if;
 
   perform settle_boosters(v_uid);
