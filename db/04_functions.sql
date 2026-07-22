@@ -544,12 +544,14 @@ $$;
 -- claim_cash(): reward for clicking a floating cash drop. The client decides
 -- when a drop appears/gets clicked, but the SERVER decides whether to pay:
 -- allowed at most once per cooldown (server clock). So a script hammering this
--- only gets one reward per cooldown, same as an honest player. The reward (in
--- dollars) GROWS with your tap upgrade. Returns the snapshot plus 'cash_gained'
--- (0 if still on cooldown).
---   reward = CASH_BASE * (1 + tap_level)   dollars
---   CASH_BASE     = 0.10   base dollars per drop
---   CASH_COOLDOWN = 10     seconds between rewards
+-- only gets one reward per cooldown, same as an honest player. The reward is a
+-- fixed number of TAPS' worth of income, so it scales with your hustle level,
+-- method, and rank and stays proportionate at every stage (no flat base that is
+-- huge early). Booster is excluded so drops can't be farmed during a boost.
+-- Returns the snapshot plus 'cash_gained' (0 if still on cooldown).
+--   reward = base_per_tap * CASH_TAPS
+--   CASH_TAPS     = 15   a coin is worth ~15 taps of income
+--   CASH_COOLDOWN = 10   seconds between rewards
 -- ---------------------------------------------------------------------------
 create or replace function claim_cash()
 returns jsonb
@@ -560,6 +562,9 @@ as $$
 declare
   v_uid    uuid := auth.uid();
   v        player_state;
+  v_method methods;
+  v_rankbonus numeric;
+  v_pertap numeric;
   v_now    timestamptz := now();
   v_reward numeric;
 begin
@@ -573,8 +578,13 @@ begin
     return state_json(v_uid) || jsonb_build_object('cash_gained', 0);
   end if;
 
-  -- dollars, grows as you invest in the tap upgrade
-  v_reward := 0.10 * (1 + v.tap_level);   -- CASH_BASE = 0.10
+  -- base per-tap (no booster) = same earning as a normal tap, so the drop scales
+  -- with hustle level / method / rank.
+  select * into v_method from methods where id = v.current_method_id;
+  select coalesce(tap_bonus, 0) into v_rankbonus from ranks where id = v.rank_id;
+  v_pertap := (coalesce(v_rankbonus, 0) + 0.01 + 0.003 * v.tap_level * (v.tap_level + 1) / 2)
+              * coalesce(v_method.multiplier, 1);
+  v_reward := v_pertap * 15;   -- CASH_TAPS = 15
 
   update player_state set last_cash_at = v_now where user_id = v_uid;
   perform apply_earn(v_uid, v_reward);    -- adds to both net worth and balance
@@ -585,10 +595,10 @@ $$;
 
 -- ---------------------------------------------------------------------------
 -- claim_wallet(): the RARE, bigger drop. Same server-authoritative design as
--- claim_cash but a larger reward and a longer cooldown, so it can't be farmed.
---   reward = WALLET_BASE * (1 + tap_level)   dollars
---   WALLET_BASE     = 2.00   base dollars per wallet (20x a coin)
---   WALLET_COOLDOWN = 60     seconds between wallet rewards
+-- claim_cash but worth many more taps and a longer cooldown, so it can't be farmed.
+--   reward = base_per_tap * WALLET_TAPS
+--   WALLET_TAPS     = 100   a wallet is worth ~100 taps (about 7x a coin)
+--   WALLET_COOLDOWN = 120   seconds between wallet rewards (rarer than coins)
 -- ---------------------------------------------------------------------------
 create or replace function claim_wallet()
 returns jsonb
@@ -599,6 +609,9 @@ as $$
 declare
   v_uid    uuid := auth.uid();
   v        player_state;
+  v_method methods;
+  v_rankbonus numeric;
+  v_pertap numeric;
   v_now    timestamptz := now();
   v_reward numeric;
 begin
@@ -607,11 +620,16 @@ begin
   select * into v from player_state where user_id = v_uid for update;
   if not found then raise exception 'no player state'; end if;
 
-  if extract(epoch from (v_now - v.last_wallet_at)) < 60 then   -- WALLET_COOLDOWN
+  if extract(epoch from (v_now - v.last_wallet_at)) < 120 then   -- WALLET_COOLDOWN
     return state_json(v_uid) || jsonb_build_object('wallet_gained', 0);
   end if;
 
-  v_reward := 2.00 * (1 + v.tap_level);   -- WALLET_BASE = 2.00
+  -- base per-tap (no booster), same scaling as claim_cash but worth more taps
+  select * into v_method from methods where id = v.current_method_id;
+  select coalesce(tap_bonus, 0) into v_rankbonus from ranks where id = v.rank_id;
+  v_pertap := (coalesce(v_rankbonus, 0) + 0.01 + 0.003 * v.tap_level * (v.tap_level + 1) / 2)
+              * coalesce(v_method.multiplier, 1);
+  v_reward := v_pertap * 100;   -- WALLET_TAPS = 100
 
   update player_state set last_wallet_at = v_now where user_id = v_uid;
   perform apply_earn(v_uid, v_reward);

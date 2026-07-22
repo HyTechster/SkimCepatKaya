@@ -11,8 +11,8 @@ import { fmtMoney, toast } from "./ui.js";
 
 const COIN_MIN_GAP   = 12000;   // ms between coins
 const COIN_MAX_GAP   = 24000;
-const WALLET_MIN_GAP  = 70000;  // ms between wallets (rare)
-const WALLET_MAX_GAP  = 160000;
+const WALLET_MIN_GAP  = 150000;  // ms between wallets (rare, big payout)
+const WALLET_MAX_GAP  = 300000;
 
 let layer;
 let drops = [];
@@ -30,7 +30,7 @@ export function initSky() {
   window.addEventListener("resize", onResize);
   const t = performance.now();
   nextCoinAt = t + rand(4000, 8000);
-  nextWalletAt = t + rand(30000, 60000);   // first wallet not too soon
+  nextWalletAt = t + rand(60000, 120000);   // first wallet not too soon
   requestAnimationFrame(loop);
 }
 

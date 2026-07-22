@@ -20,6 +20,8 @@ export const buyRank      = (id) => rpc("buy_rank",      { p_id: id });
 export const claimIdle    = ()   => rpc("claim_idle");
 export const claimCash    = ()   => rpc("claim_cash");
 export const claimWallet  = ()   => rpc("claim_wallet");
+export const submitFeedback = (name, category, message) =>
+  rpc("submit_feedback", { p_name: name, p_category: category, p_message: message });
 
 // The signed-in user's public profile (display_name). RLS returns only the
 // caller's own row, so we DON'T need — and must not call — supabase.auth.getUser()

@@ -30,6 +30,18 @@
 }
 
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+/* Keep the scrollbar ALWAYS present (overflow-y: scroll) so it never appears or
+   disappears when a taller tab like Ranks opens -> content and #bg never shift.
+   The track is transparent so the full-width #bg shows through it, and the thumb
+   floats on top of the background instead of sitting in a solid reserved lane. */
+html { overflow-y: scroll; scrollbar-width: thin; scrollbar-color: rgba(0,0,0,0.42) transparent; }
+::-webkit-scrollbar { width: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.4); border-radius: 8px;
+  border: 2px solid transparent; background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.58); background-clip: padding-box; }
 html, body { margin: 0; }
 body {
   background-color: var(--bg);
@@ -49,7 +61,10 @@ body {
    recomputes and the scene doesn't zoom/jump while scrolling. hud.js swaps its
    background-image to the current method's scene. */
 #bg {
-  position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100lvh;
+  /* 100vw = full viewport width INCLUDING the scrollbar area, and it stays
+     constant whether or not a scrollbar is showing. So the vertical scrollbar
+     draws on top of the background's right edge and the image never moves. */
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100lvh;
   z-index: -1; background-color: var(--bg);
   background-image:
     linear-gradient(180deg, rgba(12,9,3,0.30), rgba(12,9,3,0.55)),
@@ -349,7 +364,7 @@ input:focus-visible { outline: 0; border-color: var(--accent);
 .card-list { display: flex; flex-direction: column; gap: 8px; }
 .card {
   display: flex; align-items: center; gap: 11px;
-  background: linear-gradient(180deg, var(--panel-2), var(--bg-2));
+  background: #29190a;                 /* solid dark brown, same as the leaderboard "me" row */
   border: 2px solid var(--edge); border-radius: 12px; padding: 9px 10px;
   box-shadow: 0 2px 0 rgba(0,0,0,0.35);
   transition: transform 0.08s ease, box-shadow 0.12s;
@@ -458,6 +473,76 @@ input:focus-visible { outline: 0; border-color: var(--accent);
 .sb-btn:active  { transform: translateY(4px); box-shadow: 0 0 0 #a52738; }
 .donate-emoji { font-size: 17px; }
 .sb-icon { flex: 0 0 auto; display: block; }   /* white heart, inherits the button's white text color */
+
+/* ---- feedback & ideas ---- */
+/* Mobile default: the trigger button and close (X) are hidden; the panel shows
+   inline in the column flow. Desktop (>=921px, below) flips it to a modal. */
+.fb-open { display: none; }
+.fb-close { display: none; }
+.fb-text { color: #f2e7c4; font-size: 13px; line-height: 1.5; margin: 0 0 12px; }
+.fb-form { display: flex; flex-direction: column; gap: 8px; }
+.fb-input {
+  font: inherit; font-size: 13px; font-weight: 500; color: var(--ink);
+  background: var(--bg-2); border: 2px solid var(--line); border-radius: 10px;
+  padding: 9px 11px; width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4);
+}
+.fb-input::placeholder { color: #7a6f4d; font-weight: 500; }
+.fb-input:focus-visible { outline: 0; border-color: var(--accent);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.4), 0 0 0 3px rgba(255,192,46,0.22); }
+.fb-msg { resize: vertical; min-height: 64px; }
+.fb-send {
+  margin-top: 2px; padding: 10px; border: 2.5px solid var(--edge); border-radius: 11px;
+  font-weight: 800; font-size: 14px; color: #0a0c18; cursor: pointer;
+  background: linear-gradient(180deg, #FFE08A, var(--accent));
+  box-shadow: 0 4px 0 #b8860f;
+  transition: transform 0.05s, box-shadow 0.05s, filter 0.15s;
+}
+.fb-send:hover { filter: brightness(1.05); }
+.fb-send:active { transform: translateY(4px); box-shadow: 0 0 0 #b8860f; }
+.fb-send:disabled { opacity: 0.6; cursor: default; filter: none; transform: none; box-shadow: 0 4px 0 #b8860f; }
+
+/* ---- contact / socials ---- */
+.contact { text-align: center; }
+.social-icons { display: flex; justify-content: center; gap: 12px; }
+.social {
+  display: grid; place-items: center; width: 42px; height: 42px;
+  color: var(--muted); background: var(--bg-2);
+  border: 2px solid var(--line); border-radius: 50%;
+  transition: transform 0.05s, color 0.15s, border-color 0.15s;
+}
+.social:hover { color: var(--accent); border-color: var(--accent); transform: translateY(-2px); }
+.social svg { width: 20px; height: 20px; display: block; }
+
+/* Desktop: feedback becomes a button that opens a centered modal (keeps the
+   right column short). Mobile keeps the inline panel from the rules above. */
+@media (min-width: 921px) {
+  .fb-open {
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; cursor: pointer; font: inherit; font-weight: 800; font-size: 14px; color: var(--ink);
+    transition: filter 0.15s, transform 0.05s;
+  }
+  .fb-open:hover { filter: brightness(1.06); }
+  .fb-open:active { transform: translateY(2px); }
+  .fb-open-emoji { font-size: 16px; }
+
+  .fb-wrap {
+    position: fixed; inset: 0; z-index: 100; padding: 20px;
+    display: none; place-items: center;
+    background: rgba(5, 7, 14, 0.7); backdrop-filter: blur(3px);
+  }
+  .fb-wrap.open { display: grid; }
+  .fb-wrap .feedback { width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; margin: 0; }
+
+  .fb-close {
+    display: grid; place-items: center;
+    position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 9px;
+    border: 2.5px solid var(--edge); background: var(--panel-2); color: var(--muted);
+    font-size: 18px; line-height: 1; box-shadow: 0 3px 0 var(--edge); cursor: pointer;
+  }
+  .fb-close:hover { color: var(--ink); }
+  .fb-close:active { transform: translateY(3px); box-shadow: 0 0 0 var(--edge); }
+}
 
 /* ---- help button + modal ---- */
 .help-btn {

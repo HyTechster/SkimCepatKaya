@@ -7,6 +7,7 @@ import { initEngine, reconcileFromState } from "./engine.js";
 import { initHud } from "./hud.js";
 import { initShop } from "./shop.js";
 import { initLeaderboard } from "./leaderboard.js";
+import { initFeedback } from "./feedback.js";
 import { claimIdleOnLoad } from "./idle.js";
 import { initSky, enableCashDrops } from "./sky.js";
 import { $, $$, showScreen, toast, errText } from "./ui.js";
@@ -33,6 +34,7 @@ async function startGame() {
     initHud();
     initShop();
     initLeaderboard();
+    initFeedback();
     enableCashDrops(true);       // cash drops pay out now that we're signed in
     $("#helpModal").classList.remove("hidden");  // show the tutorial on each login
     await claimIdleOnLoad();

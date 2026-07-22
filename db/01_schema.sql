@@ -1,7 +1,7 @@
 -- ============================================================================
 -- 01_schema.sql — tables
 -- ----------------------------------------------------------------------------
--- Run order: 01_schema → 02_config_data → 03_rls → 04_functions → 05_leaderboard
+-- Run order: 01_schema → 02_config_data → 03_rls → 04_functions → 05_leaderboard → 06_feedback
 -- Paste each file into Supabase → SQL Editor → New query → Run.
 --
 -- Design in one sentence: the CLIENT never writes score/money. Everything the

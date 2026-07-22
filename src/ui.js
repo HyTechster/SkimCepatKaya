@@ -66,5 +66,8 @@ export function errText(e) {
   if (/previous rank/i.test(m))       return "Unlock the previous rank first.";
   if (/previous method/i.test(m))     return "Unlock the previous method first.";
   if (/level too low/i.test(m))       return "Your level is too low for that.";
+  if (/feedback cooldown/i.test(m))   return "Please wait a bit before sending more feedback.";
+  if (/name required/i.test(m))       return "Please enter your name.";
+  if (/message required/i.test(m))    return "Please write a message.";
   return m;
 }
