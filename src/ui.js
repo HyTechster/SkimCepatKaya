@@ -64,6 +64,7 @@ export function errText(e) {
   if (/already unlocked/i.test(m))    return "You already own that.";
   if (/not unlocked/i.test(m))        return "Unlock it first.";
   if (/previous rank/i.test(m))       return "Unlock the previous rank first.";
+  if (/previous method/i.test(m))     return "Unlock the previous method first.";
   if (/level too low/i.test(m))       return "Your level is too low for that.";
   return m;
 }

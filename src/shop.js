@@ -211,17 +211,23 @@ function renderMethods(state, methods) {
   const host = $("#methodList");
   host.innerHTML = "";
   const owned = new Set(state.owned_methods || []);
-  for (const m of methods) {
+  // ladder order: a method can only be bought once the one below it is owned.
+  const ladder = [...methods].sort((a, b) => Number(a.sort) - Number(b.sort));
+  let prevOwned = true;   // nothing sits below the first method
+  for (const m of ladder) {
     const isOwned = owned.has(m.id);
     const isCurrent = state.current_method_id === m.id;
     const cost = Number(m.cost);
     const afford = Number(state.balance) >= cost;
+    const gated = !isOwned && !prevOwned;   // previous method not owned yet
 
     let btnLabel, action, disabled = false;
     if (isCurrent) {
       btnLabel = "IN USE"; disabled = true;
     } else if (isOwned) {
       btnLabel = "Switch"; action = () => buy(api.setMethod, m.id);
+    } else if (gated) {
+      btnLabel = "🔒 Locked"; disabled = true;
     } else {
       btnLabel = fmtMoney(cost); action = () => buy(api.unlockMethod, m.id); disabled = !afford;
     }
@@ -230,13 +236,14 @@ function renderMethods(state, methods) {
       iconClass: `method method-${m.id}`,
       name: m.name,
       chip: `×${fmtDec(m.multiplier)}`,
-      sub: isCurrent ? "in use" : isOwned ? "unlocked" : "locked",
+      sub: isCurrent ? "in use" : isOwned ? "unlocked" : gated ? "unlock the previous one first" : "locked",
       btnLabel,
-      affordable: afford || isOwned,
+      affordable: (afford && !gated) || isOwned,
       disabled,
     });
     if (isCurrent) el.classList.add("active");
     if (action) btn.addEventListener("click", action);
     host.appendChild(el);
+    prevOwned = isOwned;
   }
 }

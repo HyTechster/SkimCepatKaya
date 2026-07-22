@@ -9,28 +9,31 @@
 
 -- METHODS: the thing you tap changes to match your current place. cost is in
 -- dollars; multiplier scales both tap value and idle income.
+-- cost climbs steeply: each method is a real savings goal, and (server-enforced)
+-- you must own the one below it before you can buy the next.
 insert into methods (id, name, cost, multiplier, sort) values
-  ('piggy_bank', 'Piggy Bank',       0,      1.0,  0),   -- owned by default
-  ('wallet',     'Wallet',           5,      1.5,  1),
-  ('qr',         'QR DuitSekarang',  50,     2.5,  2),
-  ('card',       'Debit Card',       250,    4.0,  3),
-  ('bank',       'Bank Account',     1500,   6.0,  4),
-  ('vault',      'Vault',            12000,  12.0, 5)
+  ('piggy_bank', 'Piggy Bank',       0,       1.0,  0),   -- owned by default
+  ('wallet',     'Wallet',           35,      1.5,  1),
+  ('qr',         'QR DuitSekarang',  300,     2.5,  2),
+  ('card',       'Debit Card',       2000,    4.0,  3),
+  ('bank',       'Bank Account',     15000,   6.0,  4),
+  ('vault',      'Vault',            120000,  12.0, 5)
 on conflict (id) do update set
   name = excluded.name, cost = excluded.cost,
   multiplier = excluded.multiplier, sort = excluded.sort;
 
 -- UPGRADES:
 --   tap   -> dollars per click  = ($0.01 base + hustle) * place_mult * booster
---             where hustle SCALES: the Nth level adds $0.025 x N, so total after L
---             levels = 0.025 * L*(L+1)/2. `effect` holds the per-level step (0.025);
---             the client multiplies it by the next level to show its real gain.
+--             where hustle SCALES gently: the Nth level adds $0.006 x N, so total
+--             after L levels = 0.006 * L*(L+1)/2 (L15 ~ $0.72, L50 ~ $7.65, L100 ~ $30).
+--             `effect` holds the per-level step (0.006); the client multiplies it by
+--             the next level to show its real gain.
 --   drone -> passive $/sec      = (drone_level * $0.01) * place_mult  (flat effect)
 -- Cost of the NEXT level = base_cost * growth ^ current_level.
--- Side Hustle is the main grind: each level is worth MORE than the last, and the
--- final level (100) adds $2.50/tap = the Jutawan prestige bonus.
+-- Side Hustle is the main grind: each level is worth MORE than the last, but kept
+-- gentle early so it doesn't rocket the first levels (level 15 ~ $0.72/tap, not $3).
 insert into upgrades (id, kind, name, base_cost, growth, effect, max_level, sort) values
-  ('hustle', 'tap',   'Side Hustle',     1.25, 1.15, 0.025, 100, 0),
+  ('hustle', 'tap',   'Side Hustle',     0.20, 1.15, 0.006, 100, 0),
   ('invest', 'drone', 'Auto Investment', 2.00, 1.18, 0.01,  100, 1)
 on conflict (id) do update set
   kind = excluded.kind, name = excluded.name, base_cost = excluded.base_cost,
