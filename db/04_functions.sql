@@ -329,6 +329,7 @@ declare
   v_now       timestamptz := now();
   v_remaining numeric := 0;
   v_total     numeric;
+  v_cost      numeric;
   v_active_id text;
   v_active_mult numeric;
 begin
@@ -338,7 +339,11 @@ begin
   if not found then raise exception 'unknown booster %', p_id; end if;
 
   select * into v from player_state where user_id = v_uid for update;
-  if v.balance < v_b.cost then raise exception 'not enough balance'; end if;
+
+  -- dynamic price: the floor, or a slice of net worth once you're wealthy enough.
+  -- Recomputed here on the server, so a tampered client can't buy it cheaper.
+  v_cost := greatest(v_b.cost, v.net_worth * coalesce(v_b.cost_rate, 0));
+  if v.balance < v_cost then raise exception 'not enough balance'; end if;
 
   perform settle_boosters(v_uid);
 
@@ -350,7 +355,7 @@ begin
     from player_boosters where user_id = v_uid and booster_id = p_id;
   v_total := coalesce(v_remaining, 0) + v_b.duration_seconds;
 
-  update player_state set balance = balance - v_b.cost, updated_at = v_now
+  update player_state set balance = balance - v_cost, updated_at = v_now
    where user_id = v_uid;
 
   -- rebuild this booster's row from scratch

@@ -42,11 +42,17 @@ on conflict (id) do update set
   max_level = excluded.max_level, sort = excluded.sort;
 
 -- BOOSTERS: temporary flat multipliers on tap value. Best active one applies.
-insert into boosters (id, name, cost, multiplier, duration_seconds, sort) values
-  ('payday',   'Payday',            3,  2.0, 30, 0),
-  ('compound', 'Compound Interest', 15, 3.0, 60, 1)
+-- Price is dynamic: max(cost, net_worth * cost_rate). `cost` is the early-game
+-- floor; `cost_rate` (a % of net worth) makes the price scale as you get richer,
+-- so boosters always take a bit of grinding instead of being an instant buy.
+-- Stronger boosters use a higher rate. Tune cost_rate up for a longer grind.
+alter table boosters add column if not exists cost_rate numeric not null default 0;
+insert into boosters (id, name, cost, cost_rate, multiplier, duration_seconds, sort) values
+  ('payday',   'Payday',            3,  0.02, 2.0, 30, 0),
+  ('compound', 'Compound Interest', 15, 0.06, 3.0, 20, 1)
 on conflict (id) do update set
-  name = excluded.name, cost = excluded.cost, multiplier = excluded.multiplier,
+  name = excluded.name, cost = excluded.cost, cost_rate = excluded.cost_rate,
+  multiplier = excluded.multiplier,
   duration_seconds = excluded.duration_seconds, sort = excluded.sort;
 
 -- RANKS: Malaysian traditional / honorific titles, commoner (Rakyat) up to the

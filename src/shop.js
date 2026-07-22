@@ -172,7 +172,9 @@ function renderBoosters(state, boosters) {
   }
 
   for (const b of boosters) {
-    const cost = Number(b.cost);
+    // dynamic price: floor, or a slice of net worth once you're wealthy (matches
+    // the server's greatest(cost, net_worth * cost_rate) so the label is honest).
+    const cost = Math.max(Number(b.cost), Number(state.net_worth) * Number(b.cost_rate || 0));
     const afford = Number(state.balance) >= cost;
     const e = map.get(b.id);
     const isActive = e && e.active;
