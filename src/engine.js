@@ -10,6 +10,7 @@ import { CLICK_BATCH_MS, METHOD_VISUALS, DEFAULT_VISUAL } from "./config.js";
 import { store, setState } from "./store.js";
 import * as api from "./api.js";
 import { fmtMoney } from "./ui.js";
+import { playCash } from "./sound.js";
 
 const CENTER = 240;
 const BASE_R = 92;
@@ -93,6 +94,7 @@ function onTap() {
   cw.tap();
   pending++;
   spawnGain();
+  playCash();
 }
 
 // A floating "+$X" (the per-tap money) that rises from the object, NOT from the

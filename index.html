@@ -37,6 +37,7 @@
         <label>Display name<input id="upName" type="text" maxlength="24" required autocomplete="nickname" placeholder="shown on the leaderboard" /></label>
         <label>Email<input id="upEmail" type="email" required autocomplete="email" /></label>
         <label>Password<input id="upPass" type="password" required minlength="6" autocomplete="new-password" /></label>
+        <label>Confirm password<input id="upPass2" type="password" required minlength="6" autocomplete="new-password" /></label>
         <button id="upSubmit" class="primary" type="submit">Create account</button>
       </form>
     </div>
@@ -136,11 +137,20 @@
 
         <div class="panel donate">
           <h3>Enjoying SkimCepatKaya?</h3>
-          <p class="donate-text">Put a smile on your face? Buy me a coffee to support the me!</p>
-          <a class="bmc-btn" href="https://buymeacoffee.com/hytechster"
-             target="_blank" rel="noopener noreferrer">
-            <span class="bmc-emoji">☕</span> Buy me a coffee
-          </a>
+          <p class="donate-text">Put a smile on your face? Support me to keep the grind going!</p>
+          <div class="donate-btns">
+            <a class="bmc-btn" href="https://buymeacoffee.com/hytechster"
+               target="_blank" rel="noopener noreferrer">
+              <span class="donate-emoji">☕</span> Buy me a coffee
+            </a>
+            <a class="sb-btn" href="https://sociabuzz.com/hytechster"
+               target="_blank" rel="noopener noreferrer">
+              <svg class="sb-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor" aria-hidden="true">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+              SociaBuzz
+            </a>
+          </div>
         </div>
       </aside>
     </main>
