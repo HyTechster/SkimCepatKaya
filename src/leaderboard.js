@@ -39,11 +39,15 @@ function makeRow(data, { isMe = false, pos = null } = {}) {
   rk.textContent = data.rank_name || "Rakyat";
   info.append(who, rk);
 
+  const lvl = document.createElement("span");
+  lvl.className = "lvl";
+  lvl.textContent = "Lv " + (data.level ?? 1);
+
   const pts = document.createElement("span");
   pts.className = "pts";
   pts.textContent = fmtMoney(data.net_worth);
 
-  li.append(info, pts);
+  li.append(info, lvl, pts);
   return li;
 }
 

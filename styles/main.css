@@ -409,7 +409,7 @@ input:focus-visible { outline: 0; border-color: var(--accent);
 .ranks { list-style: none; margin: 0; padding: 0; counter-reset: rank; }
 .ranks li {
   counter-increment: rank; position: relative; display: grid;
-  grid-template-columns: 24px 1fr auto; align-items: center; gap: 10px;
+  grid-template-columns: 24px 1fr auto auto; align-items: center; gap: 10px;
   padding: 11px 9px; font-size: 14px;
 }
 /* plank seam under each name, drawn on the wood background (not around the text).
@@ -440,6 +440,13 @@ input:focus-visible { outline: 0; border-color: var(--accent);
 .ranks .who-rank { font-size: 11px; font-weight: 600; color: var(--gold);
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ranks li.me .who { color: var(--ink); }
+.ranks .lvl {
+  font-size: 11px; font-weight: 800; color: var(--muted);
+  font-variant-numeric: tabular-nums; white-space: nowrap; text-align: center;
+  padding: 2px 8px; border-radius: 999px;
+  background: var(--bg-2); border: 1px solid var(--line);
+}
+.ranks li.me .lvl, .ranks li.lb-you .lvl { color: var(--ink); }
 .ranks .pts { color: var(--accent-2); font-weight: 800; font-variant-numeric: tabular-nums; }
 .ranks li:nth-child(1) .pts { color: var(--gold); }
 /* divider between the top slice and the "you are #N" row */
